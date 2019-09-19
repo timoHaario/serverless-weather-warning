@@ -1,0 +1,18 @@
+{
+    "printWidth": 100,
+    "tabWidth": 4,
+    "overrides": [
+        {
+            "files": "*.json",
+            "options": {
+                "tabWidth": 2
+            }
+        },
+        {
+            "files": "*.ts",
+            "options": {
+                "tabWidth": 4
+            }
+        }
+    ]
+}
