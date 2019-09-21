@@ -25,6 +25,7 @@ const styles = StyleSheet.create({
         paddingLeft: 5,
         paddingBottom: 2,
         color: "#262626",
+        width: "80%",
         fontSize: 18,
         fontWeight: "200",
         flex: 1,
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
         height: 45,
         flexDirection: "column",
         alignItems: "flex-start",
-        width: "100%",
+        width: "80%",
         borderColor: "#D4D4D4",
         borderBottomWidth: 1
     }

@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "react-navigation-hooks";
 import WeatherCard from "../components/weatherCard/weatherCard";
+import AddButton from "../components/common/AddButton";
 
 export interface Props {
     navigation: any;
@@ -47,19 +48,27 @@ const DashboardScreen = () => {
     };
 
     return (
-        <View style={styles.screen}>
-            <View style={styles.settingsButton}>
-                <Ionicons
-                    name="md-settings"
-                    size={32}
-                    color="#00BFFF"
-                    onPress={() => navigate("SettingsScreen")}
-                />
+        <>
+            <View style={styles.screen}>
+                <View style={styles.settingsButton}>
+                    <Ionicons
+                        name="md-settings"
+                        size={32}
+                        color="#00BFFF"
+                        onPress={() => navigate("SettingsScreen")}
+                    />
+                </View>
+                <ScrollView contentContainerStyle={styles.container}>
+                    <WeatherCard weatherCard={mockData.asd.weatherCards[0]} />
+                    <WeatherCard weatherCard={mockData.asd.weatherCards[0]} />
+                    <WeatherCard weatherCard={mockData.asd.weatherCards[0]} />
+                    <WeatherCard weatherCard={mockData.asd.weatherCards[0]} />
+                </ScrollView>
             </View>
-            <ScrollView contentContainerStyle={styles.container}>
-                <WeatherCard weatherCard={mockData.asd.weatherCards[0]} />
-            </ScrollView>
-        </View>
+            <View style={styles.addButton}>
+                <AddButton />
+            </View>
+        </>
     );
 };
 export default DashboardScreen;
@@ -84,6 +93,13 @@ const styles = StyleSheet.create({
     settingsButton: {
         alignItems: "flex-end",
         margin: 15
+    },
+    addButton: {
+        justifyContent: "center",
+        alignItems: "center",
+        position: "absolute",
+        bottom: 20,
+        left: "42%"
     }
 });
 
