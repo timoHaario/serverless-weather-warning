@@ -3,7 +3,7 @@
     "name": "serverless pekka pouta",
     "slug": "serverless-pekka-pouta",
     "privacy": "public",
-    "sdkVersion": "34.0.0",
+    "sdkVersion": "38.0.0",
     "platforms": ["ios", "android", "web"],
     "version": "1.0.0",
     "orientation": "portrait",
