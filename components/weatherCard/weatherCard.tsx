@@ -1,129 +1,173 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, Switch, TouchableHighlight } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "react-navigation-hooks";
+import * as firebase from "firebase";
 
-/*
-{
-                id: 123,
-                name: "Helsinki",
-                lat: 100,
-                lon: 100,
-                weekdays: {
-                    monady: true,
-                    tuesday: true,
-                    wednesday: true,
-                    thursday: true,
-                    friday: true,
-                    saturday: false,
-                    sunday: false
-                },
-                startTime: "06:00",
-                endtime: "19:00",
-                trackers: {
-                    rain: true
-                }
-            }
-*/
 const WeatherCard = props => {
-    const { name, weekdays, startTime, endTime } = props.weatherCard;
+    const { isActive, location, weekdays, startTime, endTime, key } = props.locationItem;
+    const { navigate } = useNavigation();
 
-    return (
-        <View style={styles.container}>
-            <Title name={name} />
-            <Weekdays weekdays={weekdays} />
-            <View style={styles.timesAndEdit}>
-                <Times startTime={startTime} endTime={endTime} />
-                <Edit />
+    const [toggleActive, setToggleActive] = useState(isActive);
+    const toggleSwitch = () => {
+        const userId = firebase.auth().currentUser.uid;
+        firebase
+            .database()
+            .ref("users/" + userId + "/locations/" + key)
+            .update({ isActive: !toggleActive })
+            .then(function() {
+                console.log("Activation toggled");
+                setToggleActive(!toggleActive);
+            })
+            .catch(function(error) {
+                console.log("Activation toggling failed with error: ", error);
+            });
+    };
+
+    const WeekDayButton = props => {
+        const { day } = props;
+        const on = weekdays[day];
+        return (
+            <TouchableHighlight
+                style={on ? styles.circleOn : styles.circleOff}
+                underlayColor={"#ccc"}
+            >
+                <Text style={on ? styles.circleOnText : { color: "#aaaaaa", fontSize: 18 }}>
+                    {day[0].toUpperCase()}
+                </Text>
+            </TouchableHighlight>
+        );
+    };
+
+    const Weekdays = props => {
+        return (
+            <View style={styles.weekDays}>
+                <WeekDayButton day={"monday"} />
+                <WeekDayButton day={"tuesday"} />
+                <WeekDayButton day={"wednesday"} />
+                <WeekDayButton day={"thursday"} />
+                <WeekDayButton day={"friday"} />
+                <WeekDayButton day={"saturday"} />
+                <WeekDayButton day={"sunday"} />
             </View>
-        </View>
-    );
-};
+        );
+    };
 
-const Title = props => {
+    const Edit = () => {
+        return (
+            <View style={styles.editButton}>
+                <Ionicons
+                    name="md-create"
+                    size={32}
+                    color="#00BFFF"
+                    onPress={() =>
+                        navigate("CreateScreen", {
+                            item: props.locationItem
+                        })
+                    }
+                />
+            </View>
+        );
+    };
+
+    const TitleAndSwitch = () => {
+        return (
+            <View style={styles.title}>
+                <Text style={styles.text}>{location.name}</Text>
+                <Switch
+                    onValueChange={toggleSwitch}
+                    value={toggleActive}
+                    trackColor={{ true: "#5271A5", false: "#767577" }}
+                    thumbColor={toggleActive ? "#81b0ff" : "#f4f3f4"}
+                />
+            </View>
+        );
+    };
+
     return (
-        <View style={styles.title}>
-            <Text style={styles.fontSize}>{props.name}</Text>
-            <Switch />
-        </View>
-    );
-};
-
-const Weekdays = props => {
-    return (
-        <View style={styles.weekDays}>
-            <WeekDayButton day={"M"} />
-            <WeekDayButton day={"T"} />
-            <WeekDayButton day={"W"} />
-            <WeekDayButton day={"T"} />
-            <WeekDayButton day={"F"} />
-            <WeekDayButton day={"S"} />
-            <WeekDayButton day={"S"} />
-        </View>
-    );
-};
-
-const WeekDayButton = props => {
-    const { day } = props;
-
-    return (
-        <TouchableHighlight
-            style={styles.circle}
-            underlayColor="#ccc"
-            onPress={() => alert("Yaay!")}
-        >
-            <Text>{day}</Text>
-        </TouchableHighlight>
+        <>
+            <View style={styles.container}>
+                <TitleAndSwitch />
+                <Weekdays />
+                <View style={styles.timesAndEdit}>
+                    <Times startTime={startTime} endTime={endTime} />
+                    <Edit />
+                </View>
+            </View>
+            <View
+                style={{
+                    marginLeft: 5,
+                    borderBottomColor: "#666666",
+                    borderBottomWidth: 1
+                }}
+            />
+        </>
     );
 };
 
 const Times = props => {
     return (
         <View style={styles.times}>
-            <HoursMinutes time={props.startTime} />
-            <Text style={styles.fontSize}> - </Text>
-            <HoursMinutes time={props.endTime} />
+            <HoursMinutes time={convertToHoursMinutes(props.startTime)} />
+            <Text style={styles.text}>- </Text>
+            <HoursMinutes time={convertToHoursMinutes(props.endTime)} />
         </View>
     );
+};
+
+const convertToHoursMinutes = date => {
+    const d = new Date(date);
+    return `${("0" + d.getHours()).slice(-2)} : ${("0" + d.getMinutes()).slice(-2)} `;
 };
 
 const HoursMinutes = props => {
     return (
         <View style={styles.timeBox}>
-            <Text style={styles.fontSize}>{props.time}</Text>
-        </View>
-    );
-};
-
-const Edit = props => {
-    return (
-        <View style={styles.editButton}>
-            <Ionicons name="md-create" size={32} color="#00BFFF" onPress={() => {}} />
+            <Text style={styles.text}>{props.time}</Text>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#bbbbbb",
+        backgroundColor: "#222222",
         flexDirection: "column"
     },
     title: {
-        height: 100,
+        height: 80,
+        paddingLeft: 5,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: "red"
+        backgroundColor: "#222222",
+        color: "white"
     },
     weekDays: {
-        height: 100,
+        paddingLeft: 5,
+        height: 40,
         flexDirection: "row",
         justifyContent: "space-between",
-        backgroundColor: "red"
+        backgroundColor: "#222222"
     },
-    circle: {
+    circleOn: {
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "white",
+        backgroundColor: "#3B4C6B",
+        width: 30,
+        height: 30,
+        borderRadius: 15
+    },
+    circleOnText: {
+        fontSize: 18,
+        color: "#81b0ff"
+    },
+    circleOff: {
+        borderWidth: 1,
+        borderColor: "#888888",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#222222",
+        color: "#888888",
         width: 30,
         height: 30,
         borderRadius: 15
@@ -136,19 +180,20 @@ const styles = StyleSheet.create({
     timeBox: {
         height: 60,
         width: 100,
-        backgroundColor: "green",
+        backgroundColor: "#222222",
         justifyContent: "center",
         alignItems: "center"
     },
-    fontSize: {
-        fontSize: 28
+    text: {
+        fontSize: 28,
+        color: "#eeeeee"
     },
     timesAndEdit: {
         flexDirection: "row"
     },
     editButton: {
         flex: 1,
-        backgroundColor: "yellow",
+        backgroundColor: "#222222",
         alignItems: "flex-end",
         justifyContent: "center"
     }

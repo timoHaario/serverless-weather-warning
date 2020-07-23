@@ -1,17 +1,11 @@
 import React, { Component, useState, useContext, useEffect } from "react";
-import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    ActivityIndicator,
-    StatusBar,
-    Platform,
-    View
-} from "react-native";
+import { ScrollView, StyleSheet, Text, ActivityIndicator, Platform, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "react-navigation-hooks";
 import WeatherCard from "../components/weatherCard/weatherCard";
 import AddButton from "../components/common/AddButton";
+import * as firebase from "firebase";
 
 export interface Props {
     navigation: any;
@@ -19,64 +13,76 @@ export interface Props {
 
 const DashboardScreen = () => {
     const { navigate } = useNavigation();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [items, setItems] = useState([]);
+    const userId = firebase.auth().currentUser.uid;
+
+    const usersRef = firebase.database().ref("users");
+    const locationsRef = usersRef.child(userId + "/locations");
+    const query = locationsRef.orderByKey();
+    useEffect(() => loadLocations(), []);
+    const loadLocations = () => {
+        const locations = [];
+        query.once("value").then(function(snapshot) {
+            snapshot.forEach(function(childSnapshot) {
+                // key will be "ada" the first time and "alan" the second time
+                const key = childSnapshot.key;
+                // childData will be the actual contents of the child
+                const childData = childSnapshot.val();
+                locations.push({ ...childData, key: key });
+            });
+            setItems(locations);
+            setLoading(false);
+        });
+    };
 
     const renderContentOrSpinner = () => {
         if (loading) {
-            return <ActivityIndicator size="large" />;
+            return (
+                <View style={styles.loadingScreen}>
+                    <ActivityIndicator size="large" />
+                </View>
+            );
         }
 
         return (
             <>
-                <WeatherCard />
-                <View
-                    style={{
-                        borderBottomColor: "black",
-                        borderBottomWidth: 1
-                    }}
-                />
-                <WeatherCard />
-                <View
-                    style={{
-                        borderBottomColor: "black",
-                        borderBottomWidth: 1
-                    }}
-                />
-                <WeatherCard />
+                <View style={styles.screen}>
+                    <StatusBar style="light" />
+                    <View style={styles.settingsButton}>
+                        <Ionicons
+                            name="md-settings"
+                            size={32}
+                            color="#eeeeee"
+                            onPress={() => navigate("SettingsScreen")}
+                        />
+                    </View>
+                    <ScrollView contentContainerStyle={styles.container}>
+                        {items.map(item => {
+                            return <WeatherCard locationItem={item} key={item.key} />;
+                        })}
+                    </ScrollView>
+                </View>
+                <View style={styles.addButton}>
+                    <AddButton />
+                </View>
             </>
         );
     };
 
-    return (
-        <>
-            <View style={styles.screen}>
-                <View style={styles.settingsButton}>
-                    <Ionicons
-                        name="md-settings"
-                        size={32}
-                        color="#00BFFF"
-                        onPress={() => navigate("SettingsScreen")}
-                    />
-                </View>
-                <ScrollView contentContainerStyle={styles.container}>
-                    <WeatherCard weatherCard={mockData.asd.weatherCards[0]} />
-                    <WeatherCard weatherCard={mockData.asd.weatherCards[0]} />
-                    <WeatherCard weatherCard={mockData.asd.weatherCards[0]} />
-                    <WeatherCard weatherCard={mockData.asd.weatherCards[0]} />
-                </ScrollView>
-            </View>
-            <View style={styles.addButton}>
-                <AddButton />
-            </View>
-        </>
-    );
+    return renderContentOrSpinner();
 };
 export default DashboardScreen;
 
 const styles = StyleSheet.create({
+    loadingScreen: {
+        flex: 1,
+        justifyContent: "center",
+        backgroundColor: "#222222"
+    },
     screen: {
         flex: 1,
-        paddingTop: Platform.OS === "ios" ? 0 : StatusBar.currentHeight
+        backgroundColor: "#222222"
     },
     container: {
         flexGrow: 1,
@@ -84,15 +90,14 @@ const styles = StyleSheet.create({
         alignItems: "stretch",
         justifyContent: "flex-start",
         color: "black",
+        backgroundColor: "#222222",
         marginLeft: 15,
         marginRight: 15
     },
-    logout: {
-        alignItems: "flex-end"
-    },
     settingsButton: {
         alignItems: "flex-end",
-        margin: 15
+        margin: 15,
+        marginTop: 30
     },
     addButton: {
         justifyContent: "center",
@@ -102,30 +107,3 @@ const styles = StyleSheet.create({
         left: "42%"
     }
 });
-
-const mockData = {
-    asd: {
-        weatherCards: [
-            {
-                id: 123,
-                name: "Helsinki",
-                lat: 100,
-                lon: 100,
-                weekdays: {
-                    monady: true,
-                    tuesday: true,
-                    wednesday: true,
-                    thursday: true,
-                    friday: true,
-                    saturday: false,
-                    sunday: false
-                },
-                startTime: "06:00",
-                endTime: "19:00",
-                trackers: {
-                    rain: true
-                }
-            }
-        ]
-    }
-};

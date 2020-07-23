@@ -16,7 +16,7 @@ const LoadingScreen = () => {
             if (user) {
                 navigate("DashboardScreen");
             } else {
-                navigate("DashboardScreen");
+                navigate("SignInScreen");
             }
         });
     };
