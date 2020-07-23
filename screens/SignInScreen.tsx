@@ -18,6 +18,7 @@ export default SignInScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: "#222222",
         alignItems: "center",
         justifyContent: "center"
     }

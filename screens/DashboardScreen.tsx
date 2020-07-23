@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, ActivityIndicator, Platform, View } from 
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "react-navigation-hooks";
+import { withNavigationFocus } from "react-navigation";
 import WeatherCard from "../components/weatherCard/weatherCard";
 import AddButton from "../components/common/AddButton";
 import * as firebase from "firebase";
@@ -11,8 +12,10 @@ export interface Props {
     navigation: any;
 }
 
-const DashboardScreen = () => {
+const DashboardScreen = props => {
     const { navigate } = useNavigation();
+    const isFocused = props.isFocused;
+
     const [loading, setLoading] = useState(true);
     const [items, setItems] = useState([]);
     const userId = firebase.auth().currentUser.uid;
@@ -20,7 +23,7 @@ const DashboardScreen = () => {
     const usersRef = firebase.database().ref("users");
     const locationsRef = usersRef.child(userId + "/locations");
     const query = locationsRef.orderByKey();
-    useEffect(() => loadLocations(), []);
+    useEffect(() => loadLocations(), [isFocused]);
     const loadLocations = () => {
         const locations = [];
         query.once("value").then(function(snapshot) {
@@ -72,7 +75,9 @@ const DashboardScreen = () => {
 
     return renderContentOrSpinner();
 };
-export default DashboardScreen;
+
+//using HOC withNavigationFocus to fire the components useEffect after navigation
+export default withNavigationFocus(DashboardScreen);
 
 const styles = StyleSheet.create({
     loadingScreen: {
