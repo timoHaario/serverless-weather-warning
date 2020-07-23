@@ -7,6 +7,6 @@ npm-debug.*
 *.key
 *.mobileprovision
 *.orig.*
+config.js
 web-build/
 web-report/
-firebaseConfig.ts

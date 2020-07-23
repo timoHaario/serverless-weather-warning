@@ -6,7 +6,7 @@ import DashboardScreen from "./screens/DashboardScreen";
 import SignInScreen from "./screens/SignInScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import CreateScreen from "./screens/CreateScreen";
-import { firebaseConfig } from "./firebaseConfig";
+import firebaseConfig from "./config";
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
