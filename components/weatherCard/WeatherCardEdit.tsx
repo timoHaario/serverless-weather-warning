@@ -9,6 +9,7 @@ import {
     TouchableOpacity
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "react-navigation-hooks";
 
 import * as firebase from "firebase";
@@ -75,6 +76,22 @@ const WeatherCardEdit = props => {
             })
             .catch(function(error) {
                 console.log("Location item creation failed");
+                navigate("DashboardScreen");
+            });
+    };
+
+    const deleteLocation = () => {
+        const userId = firebase.auth().currentUser.uid;
+        firebase
+            .database()
+            .ref("users/" + userId + "/locations/" + item.key)
+            .remove()
+            .then(function() {
+                console.log("Location item deleted");
+                navigate("DashboardScreen");
+            })
+            .catch(function(error) {
+                console.log("Location item delete failed");
                 navigate("DashboardScreen");
             });
     };
@@ -163,7 +180,11 @@ const WeatherCardEdit = props => {
     return (
         <View style={styles.screen}>
             <View style={styles.container}>
-                <Title name={location.name} />
+                <TitleAndDelete
+                    name={location.name}
+                    itemKey={item ? item.key : null}
+                    deleteLocation={deleteLocation}
+                />
                 <Weekdays />
                 <View>
                     <EditableTimes />
@@ -185,6 +206,18 @@ const WeatherCardEdit = props => {
                     )}
                 </View>
             </View>
+        </View>
+    );
+};
+
+const TitleAndDelete = props => {
+    const { name, itemKey, deleteLocation } = props;
+    return (
+        <View style={styles.title}>
+            <Text style={styles.text}>{name}</Text>
+            {itemKey && (
+                <Ionicons name="md-trash" size={32} color="#00BFFF" onPress={deleteLocation} />
+            )}
         </View>
     );
 };
